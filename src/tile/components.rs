@@ -12,6 +12,10 @@ impl Tile {
     pub fn toggle_flag(&mut self) {
         self.is_flagged = !self.is_flagged;
     }
+
+    pub fn reveal(&mut self) {
+        self.is_revealed = true;
+    }
 }
 
 #[derive(Component, Copy, Clone, Debug, PartialEq)]

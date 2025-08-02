@@ -21,7 +21,7 @@ pub fn handle_tile_revealed(
                 continue;
             }
 
-            tile.is_revealed = true;
+            tile.reveal();
             game_stats.tiles_revealed += 1;
 
             if tile.is_mine {
@@ -67,7 +67,7 @@ fn reveal_adjacent_tiles(
                         && !adjacent_tile.is_flagged
                         && !adjacent_tile.is_mine
                     {
-                        adjacent_tile.is_revealed = true;
+                        adjacent_tile.reveal();
 
                         if adjacent_tile.adjacent_mines == 0 {
                             reveal_adjacent_tiles(adjacent_pos, tile_query, settings);
@@ -129,7 +129,7 @@ pub fn handle_game_over(
 
         for mut tile in tile_query.iter_mut() {
             if tile.is_mine {
-                tile.is_revealed = true;
+                tile.reveal();
             }
         }
     }

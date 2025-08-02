@@ -14,9 +14,10 @@ pub fn setup_board(
     mut commands: Commands,
     settings: Res<BoardSettings>,
     mut game_stats: ResMut<GameStats>,
+    asset_server: Res<AssetServer>,
 ) {
     render_board_bg(&mut commands, &settings);
-    spawn_tiles(&mut commands, &settings);
+    spawn_tiles(&mut commands, &settings, asset_server);
     *game_stats = GameStats::default();
 }
 
@@ -24,8 +25,9 @@ pub fn reset_board(
     mut commands: Commands,
     settings: Res<BoardSettings>,
     mut game_stats: ResMut<GameStats>,
-    tile_entities: Query<Entity, Or<(With<TileSprite>, With<TileText>)>>,
     bg_entities: Query<Entity, With<BoardBackground>>,
+    tile_entities: Query<Entity, Or<(With<TileSprite>, With<TileText>)>>,
+    asset_server: Res<AssetServer>,
 ) {
     for entity in tile_entities.iter() {
         commands.entity(entity).despawn();
@@ -35,7 +37,7 @@ pub fn reset_board(
     }
 
     render_board_bg(&mut commands, &settings);
-    spawn_tiles(&mut commands, &settings);
+    spawn_tiles(&mut commands, &settings, asset_server);
     *game_stats = GameStats::default();
 }
 
@@ -50,7 +52,7 @@ fn render_board_bg(commands: &mut Commands, settings: &BoardSettings) {
     ));
 }
 
-fn spawn_tiles(commands: &mut Commands, settings: &BoardSettings) {
+fn spawn_tiles(commands: &mut Commands, settings: &BoardSettings, asset_server: Res<AssetServer>) {
     let mines = generate_mines(settings);
 
     for y in 0..settings.height {
@@ -76,26 +78,23 @@ fn spawn_tiles(commands: &mut Commands, settings: &BoardSettings) {
             let tile_y = calculate_tile_y(position.y, settings.height, settings.tile_size);
 
             commands.spawn(TileBundle {
-                sprite: Sprite::from_color(
-                    Color::srgb(0.7, 0.7, 0.7),
-                    Vec2::new(settings.tile_size - 1.0, settings.tile_size - 1.0),
-                ),
-                transform: Transform::from_translation(Vec3::new(tile_x, tile_y, 0.0)),
-                tile: tile.clone(),
+                sprite: Sprite::from_image(asset_server.load("tile.png")),
                 position,
+                tile: tile.clone(),
                 tile_sprite: TileSprite,
+                transform: Transform::from_translation(Vec3::new(tile_x, tile_y, 0.0)),
             });
 
             if !is_mine && adjacent_mines > 0 {
                 let text_color = get_color_from_mine_count(adjacent_mines);
 
                 commands.spawn(TileTextBundle {
+                    position,
+                    tile_text: TileText,
+                    text_color: TextColor(text_color),
                     text: Text2d::new(adjacent_mines.to_string()),
                     text_layout: TextLayout::new_with_justify(JustifyText::Center),
                     transform: Transform::from_translation(Vec3::new(tile_x, tile_y, 1.0)),
-                    tile_text: TileText,
-                    text_color: TextColor(text_color),
-                    position,
                 });
             }
         }

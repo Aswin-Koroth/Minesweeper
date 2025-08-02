@@ -7,13 +7,13 @@ use crate::{
 use bevy::prelude::*;
 
 pub fn handle_mouse_input(
-    mouse_input: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window>,
-    camera: Single<(&Camera, &GlobalTransform)>,
     settings: Res<BoardSettings>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    camera: Single<(&Camera, &GlobalTransform)>,
     tile_query: Query<&Position, With<TileSprite>>,
-    mut tile_revealed_events: EventWriter<TileRevealedEvent>,
     mut tile_flagged_events: EventWriter<TileFlaggedEvent>,
+    mut tile_revealed_events: EventWriter<TileRevealedEvent>,
 ) {
     let left_click = mouse_input.just_pressed(MouseButton::Left);
     let right_click = mouse_input.just_pressed(MouseButton::Right);
