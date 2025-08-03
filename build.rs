@@ -4,9 +4,9 @@ fn main() {
         let mut res = winres::WindowsResource::new();
 
         res.set_icon("icon.ico");
-        res.set("FileDescription", "Minesweeper Game");
+        res.set("FileDescription", "Minesweeper v1.0.0");
         res.set("ProductName", "Minesweeper");
-        res.set("ProductVersion", "0.5.0");
+        res.set("ProductVersion", "1.0.0");
         res.set("CompanyName", "Aswin Koroth");
         res.set("LegalCopyright", "Copyright (c) 2025");
 

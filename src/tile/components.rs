@@ -42,6 +42,7 @@ pub struct TileBundle {
 #[derive(Bundle)]
 pub struct TileTextBundle {
     pub text: Text2d,
+    pub font: TextFont,
     pub position: Position,
     pub tile_text: TileText,
     pub transform: Transform,

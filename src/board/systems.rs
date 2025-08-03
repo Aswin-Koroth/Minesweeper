@@ -1,5 +1,6 @@
 use crate::{
     board::BoardSettings,
+    config::MINE_COUNT_TEXT_SIZE,
     game::GameStats,
     tile::{Position, Tile, TileBundle, TileSprite, TileText, TileTextBundle},
     utils::{calculate_tile_x, calculate_tile_y},
@@ -78,7 +79,11 @@ fn spawn_tiles(commands: &mut Commands, settings: &BoardSettings, asset_server: 
             let tile_y = calculate_tile_y(position.y, settings.height, settings.tile_size);
 
             commands.spawn(TileBundle {
-                sprite: Sprite::from_image(asset_server.load("tile.png")),
+                sprite: Sprite {
+                    image: asset_server.load("tile.png"),
+                    custom_size: Some(Vec2::new(settings.tile_size, settings.tile_size)),
+                    ..default()
+                },
                 position,
                 tile: tile.clone(),
                 tile_sprite: TileSprite,
@@ -93,8 +98,13 @@ fn spawn_tiles(commands: &mut Commands, settings: &BoardSettings, asset_server: 
                     tile_text: TileText,
                     text_color: TextColor(text_color),
                     text: Text2d::new(adjacent_mines.to_string()),
+                    font: TextFont {
+                        font: asset_server.load("mine-sweeper.otf"),
+                        font_size: MINE_COUNT_TEXT_SIZE,
+                        ..default()
+                    },
                     text_layout: TextLayout::new_with_justify(JustifyText::Center),
-                    transform: Transform::from_translation(Vec3::new(tile_x, tile_y, 1.0)),
+                    transform: Transform::from_translation(Vec3::new(tile_x, tile_y, 0.0)),
                 });
             }
         }
@@ -117,7 +127,7 @@ fn get_color_from_mine_count(mines: u8) -> Color {
 
 fn generate_mines(settings: &BoardSettings) -> Vec<bool> {
     let mut rng = rng();
-    let total_tiles = (settings.width * settings.height) as usize;
+    let total_tiles = settings.width as usize * settings.height as usize;
     let mut mines = vec![false; total_tiles];
 
     let mut mines_placed = 0;
@@ -142,7 +152,7 @@ fn count_adjacent_mines(mines: &[bool], width: u8, height: u8, x: u8, y: u8) -> 
             let temp_x = x as i8 + dx;
             let temp_y = y as i8 + dy;
             if temp_x >= 0 && temp_y >= 0 && temp_x < width as i8 && temp_y < height as i8 {
-                let index = (temp_y as u8 * width + temp_x as u8) as usize;
+                let index = temp_y as usize * width as usize + temp_x as usize;
                 if mines[index] {
                     count += 1;
                 }

@@ -1,9 +1,9 @@
 use crate::{
     board::BoardSettings,
-    game::{events::*, resources::*, state::GameState},
+    game::{components::OverlayText, events::*, resources::*, state::GameState},
     tile::{Position, Tile},
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, text::TextBounds};
 
 pub fn handle_tile_revealed(
     settings: Res<BoardSettings>,
@@ -106,14 +106,14 @@ pub fn handle_tile_flagged(
 
 pub fn check_win_condition(
     tile_query: Query<&Tile>,
-    mut game_won_events: EventWriter<GameWonEvent>,
     settings: Res<BoardSettings>,
+    mut game_won_events: EventWriter<GameWonEvent>,
 ) {
-    let total_tiles = (settings.width * settings.height) as u16;
-    let revealed_tiles = tile_query.iter().filter(|tile| tile.is_revealed).count() as u16;
+    let total_tiles = settings.width as usize * settings.height as usize;
+    let revealed_tiles = tile_query.iter().filter(|tile| tile.is_revealed).count() as usize;
     let mine_count = settings.mine_count as u16;
 
-    if revealed_tiles == total_tiles - mine_count {
+    if revealed_tiles == total_tiles - mine_count as usize {
         game_won_events.write(GameWonEvent);
     }
 }
@@ -122,9 +122,9 @@ pub fn handle_game_over(
     mut game_over_events: EventReader<GameOverEvent>,
     mut next_state: ResMut<NextState<GameState>>,
     mut tile_query: Query<&mut Tile>,
+    mut commands: Commands,
 ) {
     for _ in game_over_events.read() {
-        println!("Game Over! Press R to restart");
         next_state.set(GameState::GameOver);
 
         for mut tile in tile_query.iter_mut() {
@@ -132,16 +132,48 @@ pub fn handle_game_over(
                 tile.reveal();
             }
         }
+
+        show_overlay_text(&mut commands, "Game Over! Press R to restart".to_string());
     }
 }
 
 pub fn handle_game_won(
     mut game_won_events: EventReader<GameWonEvent>,
     mut next_state: ResMut<NextState<GameState>>,
+    mut commands: Commands,
 ) {
     for _ in game_won_events.read() {
-        println!("You Won! Press R to restart");
         next_state.set(GameState::Won);
+
+        show_overlay_text(&mut commands, "You Won! Press R to restart".to_string());
+    }
+}
+
+fn show_overlay_text(commands: &mut Commands, text: String) {
+    let box_size: Vec2 = Vec2::new(320.0, 25.0);
+    commands
+        .spawn((
+            Sprite::from_color(Color::srgba(0., 0., 0., 0.7), box_size),
+            OverlayText,
+        ))
+        .with_children(|builder| {
+            builder.spawn((
+                Text2d::new(text),
+                TextFont {
+                    font_size: 18.0,
+                    ..default()
+                },
+                TextBounds::from(box_size),
+            ));
+        });
+}
+
+fn remove_overlay_screen(
+    commands: &mut Commands,
+    overlay_entities: Query<Entity, With<OverlayText>>,
+) {
+    for entity in overlay_entities.iter() {
+        commands.entity(entity).despawn();
     }
 }
 
@@ -149,11 +181,14 @@ pub fn handle_new_game(
     mut new_game_events: EventReader<NewGameEvent>,
     mut next_state: ResMut<NextState<GameState>>,
     mut game_stats: ResMut<GameStats>,
+    mut commands: Commands,
+    overlay_entities: Query<Entity, With<OverlayText>>,
 ) {
     for _ in new_game_events.read() {
-        info!("New Game");
         *game_stats = GameStats::default();
         next_state.set(GameState::Playing);
+
+        remove_overlay_screen(&mut commands, overlay_entities);
     }
 }
 
