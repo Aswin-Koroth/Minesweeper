@@ -19,7 +19,7 @@ fn main() {
         .add_plugins(
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Minesweeper v1.0.0".into(),
+                    title: "Minesweeper v1.0.1".into(),
                     resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT)
                         .with_scale_factor_override(1.0),
                     ..default()

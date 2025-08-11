@@ -16,6 +16,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<TileRevealedEvent>()
             .add_event::<TileFlaggedEvent>()
+            .add_event::<ChordEvent>()
             .add_event::<GameOverEvent>()
             .add_event::<GameWonEvent>()
             .add_event::<NewGameEvent>()
@@ -29,6 +30,7 @@ impl Plugin for GamePlugin {
                         handle_tile_revealed,
                         handle_tile_flagged,
                         check_win_condition,
+                        handle_chord_tile,
                         handle_game_over,
                         handle_game_won,
                     )

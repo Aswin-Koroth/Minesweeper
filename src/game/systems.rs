@@ -35,6 +35,44 @@ pub fn handle_tile_revealed(
         }
     }
 }
+pub fn handle_chord_tile(
+    settings: Res<BoardSettings>,
+    mut chord_events: EventReader<ChordEvent>,
+    mut tile_query: Query<(&Position, &mut Tile)>,
+    mut tile_revealed_events: EventWriter<TileRevealedEvent>,
+) {
+    for event in chord_events.read() {
+        for dy in -1..=1i8 {
+            for dx in -1..=1i8 {
+                if dx == 0 && dy == 0 {
+                    continue;
+                }
+
+                let new_x = event.position.x as i8 + dx;
+                let new_y = event.position.y as i8 + dy;
+
+                if new_x >= 0
+                    && new_y >= 0
+                    && new_x < settings.width as i8
+                    && new_y < settings.height as i8
+                {
+                    let adjacent_pos = Position {
+                        x: new_x as u8,
+                        y: new_y as u8,
+                    };
+
+                    if let Some((_, mut adjacent_tile)) =
+                        tile_query.iter_mut().find(|(pos, _)| **pos == adjacent_pos)
+                    {
+                        tile_revealed_events.write(TileRevealedEvent {
+                            position: adjacent_pos,
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
 
 fn reveal_adjacent_tiles(
     position: Position,

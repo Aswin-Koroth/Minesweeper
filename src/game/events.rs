@@ -1,8 +1,13 @@
-use bevy::prelude::*;
 use crate::tile::Position;
+use bevy::prelude::*;
 
 #[derive(Event)]
 pub struct TileRevealedEvent {
+    pub position: Position,
+}
+
+#[derive(Event)]
+pub struct ChordEvent {
     pub position: Position,
 }
 
